@@ -3,50 +3,33 @@ module.exports = {
 };
 //file stuff
 var fs = require('fs');
-//Mail service
+var creds = JSON.parse(fs.readFileSync("./my.creds", 'utf8').toString());
 var nodemailer = require('nodemailer');
-var smtpTransport = require('nodemailer-smtp-transport');
-//Allows us to sleep
-//var sleep = require('sleep');
+const pug = require('pug');
 
-//Our private info
 var log = require('./log');
 
-
-//Our auth into google
-var transporter = nodemailer.createTransport(smtpTransport({
-    service: 'gmail',
-    auth: JSON.parse(fs.readFileSync("my.creds", 'utf8'))
-}));
+var transporter = nodemailer.createTransport('smtps://' + creds.email + "%40gmail.com:" + creds.pass + '@smtp.gmail.com');
 
 //Sends to an address with subject, and info
 function send(info) {
-    var fdata = [];
-    function readHandle(err, data) {
-        if (err) {
-            return err;
-        }
-        for (prop in info) {
-            data = data.split("{{" + prop + "}}").join(info[prop]);
-        }
-        fdata = data.split("{{{}}}");
+    //Compile function, and substitute info
+    var htmlFunc = pug.compileFile('./' + info.template + ".pug");
+    var txt = htmlFunc(info);
 
-        var mailOptions = {
-            from: '"PGS - Prime Generator Search" <pgs@chemicaldevelopment.us>', // sender address
-            to: info.address,
-            subject: info.subject, // Subject line
-            text: fdata[0], // plaintext body
-            html: fdata[1] // html body
-        };
-        transporter.sendMail(mailOptions, function(error, i){
-            if (error){
-                return console.log(error);
-            }
-            log.error('Message sent to: ' + info.address + ", regarding: " + info.subject);
-            log.error('   Additional Info: ');
-            log.error(JSON.stringify(info));
-        });
-    }
-    fs.readFile('./' + info.template + ".layout", 'utf8', readHandle);
+    var mailOptions = {
+        from: '"PGS - Prime Generator Search" <pgs@chemicaldevelopment.us>', // sender address
+        to: info.address,
+        subject: info.subject, // Subject line
+        text: txt,
+        html: txt
+    };
+    transporter.sendMail(mailOptions, function(error, i){
+        if (error){
+            return log.error(error);
+        }
+        log.error('Message sent to: ' + info.address + ", regarding: " + info.subject);
+        log.log('   Additional Info: ');
+        log.log(JSON.stringify(info));
+    });
 }
-

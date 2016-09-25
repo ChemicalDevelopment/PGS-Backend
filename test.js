@@ -33,6 +33,10 @@ function readPrimes() {
     return bitset;
 }
 
+function isprime(x) {
+    return get_bit(prime_array[x / 32], x % 32);
+}
+
 //Tests a polynomial
 function test_poly(p) {
     var cons = 0;
@@ -95,4 +99,13 @@ function print_quad(i, j, k) {
         }
     }
     return res;
+}
+
+function ev(p, x) {
+    var su = 0;
+    var xn = 1;
+    for (var i = 0; i < p.length; ++i) {
+        su += i * xn;
+        xn *= x;
+    }
 }

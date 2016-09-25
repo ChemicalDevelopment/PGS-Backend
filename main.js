@@ -98,25 +98,22 @@ function correctFunc(uid, func) {
     //Send an email
     var curef = db.ref('/user_data/' + uid);
     curef.once('value').then(function(snapshot) {
-        var userdata = snapshot.val();
-        var emailInfo = {
-          address: userdata.email,
-          subject: "PGS - PrimeGenSearch",
-          template: emailLayout,
-          name: userdata.email,
-          old_record_equation: test.print_quad(cfunc.equation[0], cfunc.equation[1], cfunc.equation[2]),
-          old_record_consecutive: cfunc.consecutive,
-          old_record_distinct: cfunc.distinct,
-          new_record_equation: test.print_quad(res.equation[0], res.equation[1], res.equation[2]),
-          new_record_consecutive: res.consecutive,
-          new_record_distinct: res.distinct,
-        };
-
-        mail.send(emailInfo);
-      });
-    } catch (e) {
-        log.error("Error checking function or sending mail");
-    }
+      var userdata = snapshot.val();
+      var emailInfo = {
+        address: userdata.email,
+        subject: "PGS - PrimeGenSearch",
+        template: emailLayout,
+        name: userdata.email,
+        old_eq: test.print_quad(cfunc.equation[0], cfunc.equation[1], cfunc.equation[2]),
+        old_record: JSON.stringify(cfunc),
+        new_eq: test.print_quad(res.equation[0], res.equation[1], res.equation[2]),
+        new_record: JSON.stringify(res),
+      };
+      mail.send(emailInfo);
+    });
+  } catch (e) {
+    log.error("Error checking function or sending mail: " + e);
+  }
 }
 
 function getFuncName(func) {
