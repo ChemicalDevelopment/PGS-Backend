@@ -1,0 +1,22 @@
+{
+  "name": "pgs-backend",
+  "version": "1.0.0",
+  "description": "Backed for PGS",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChemicalDevelopment/PGS-Backend.git"
+  },
+  "keywords": [
+    "PGS"
+  ],
+  "author": "Cade Brown",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/ChemicalDevelopment/PGS-Backend/issues"
+  },
+  "homepage": "https://github.com/ChemicalDevelopment/PGS-Backend#readme"
+}
