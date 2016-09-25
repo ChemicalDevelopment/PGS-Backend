@@ -3,6 +3,7 @@
 *.creds
 !example.creds
 *.private
+*.dat
 .vscode/
 node_modules/
 generateworkloads.js
