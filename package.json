@@ -20,7 +20,9 @@
   },
   "homepage": "https://github.com/ChemicalDevelopment/PGS-Backend#readme",
   "dependencies": {
+    "atob": "^2.0.3",
     "firebase": "^3.4.0",
-    "firebase-queue": "^1.5.0"
+    "firebase-queue": "^1.5.0",
+    "nodemailer": "^2.6.4"
   }
 }
