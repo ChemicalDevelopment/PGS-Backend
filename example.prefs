@@ -1,0 +1,4 @@
+{
+  "serviceAccount": "$file",
+  "databaseURL": "$url"
+}

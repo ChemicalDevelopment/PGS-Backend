@@ -1,0 +1,9 @@
+*.prefs
+!example.prefs
+*.creds
+!example.creds
+*.private
+.vscode/
+node_modules/
+generateworkloads.js
+filterworkloads.js
