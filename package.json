@@ -18,5 +18,9 @@
   "bugs": {
     "url": "https://github.com/ChemicalDevelopment/PGS-Backend/issues"
   },
-  "homepage": "https://github.com/ChemicalDevelopment/PGS-Backend#readme"
+  "homepage": "https://github.com/ChemicalDevelopment/PGS-Backend#readme",
+  "dependencies": {
+    "firebase": "^3.4.0",
+    "firebase-queue": "^1.5.0"
+  }
 }
