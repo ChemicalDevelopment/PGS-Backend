@@ -12,7 +12,6 @@ var prefs = {
 };
 
 //our extra modules
-var test = require('./test');
 var mail = require('./mail');
 
 //Create app with tokens
@@ -32,6 +31,7 @@ var lastUpdate = new Date().getTime();
 //All user data
 var udata = null;
 var udata_old = null;
+
 
 //Returns if it is noteworthy enough to post
 function record_worth(a) {
@@ -59,42 +59,28 @@ function removeDuplicates(uid) {
   }
   for (f in funcs) {
     if (f != getFuncName(funcs[f])) {
-      log.error("Incorrect name for: " + JSON.stringify(funcs[f]) + ". Expected " + getFuncName(funcs[f]) + " got funcs[f]");
-      db.ref("/user_data/" + uid + "/functions/" + getFuncName(funcs[f])).set(funcs[f]);
+      log.error("Incorrect name for: " + JSON.stringify(funcs[f]) + ". Expected " + getFuncName(funcs[f]) + " got " + funcs[f]);
       db.ref("/user_data/" + uid + "/functions/" + f).remove();
+      db.ref("/user_data/" + uid + "/functions/" + getFuncName(funcs[f])).set(funcs[f]);
     }
   }
 }
 
+function getFindKey(func, email) {
+  return getFuncName(func) + "--" + email;
+}
+
 function correctFunc(uid, func) {
-  var carrythrough = (udata_old == null);
-  //Now we incrementally null checking the structure
-  if (!carrythrough) carrythrough = carrythrough || (udata_old[uid] == null);
-  if (!carrythrough) carrythrough = carrythrough || (udata_old[uid].functions == null);
-  if (!carrythrough) carrythrough = carrythrough || (udata_old[uid].functions[func] == null);
-  if (!carrythrough) {
-    return;
-  }
   try {
     var cfunc = udata[uid].functions[func];
-    var res = test.test_poly(cfunc.equation);
-    var funcName = getFuncName(res);
-    var pp = db.ref("/user_data/public/functions/").child(funcName);
-    var up = db.ref("/user_data/" + uid + "/functions/").child(funcName);
-    var emailLayout = "default";
-    if (uid != "public" && record_worth(res)) {
-      pp.set(res);
-    }
-    if (areEquiv(res, cfunc)) {
+    if (cfunc.processed || uid == "public") {
       return;
-    } 
-    if (record_worth(res)) {
-      emailLayout = "record_changed";
-      up.set(res);
-    } else {
-      emailLayout = "record_deleted";
-      up.remove();
     }
+    cfunc.processed = true;
+    var funcName = getFuncName(cfunc);
+    db.ref("/user_data/public/functions/").child(funcName).set(cfunc);
+    db.ref("/user_data/" + uid + "/functions/").child(funcName).set(cfunc);
+    var emailLayout = "record_found";
     //Send an email
     var curef = db.ref('/user_data/' + uid);
     curef.once('value').then(function(snapshot) {
@@ -104,12 +90,21 @@ function correctFunc(uid, func) {
         subject: "PGS - PrimeGenSearch",
         template: emailLayout,
         name: userdata.email,
-        old_eq: test.print_quad(cfunc.equation[0], cfunc.equation[1], cfunc.equation[2]),
-        old_record: JSON.stringify(cfunc),
-        new_eq: test.print_quad(res.equation[0], res.equation[1], res.equation[2]),
-        new_record: JSON.stringify(res),
+        //new_eq: test.print_quad(res.equation[0], res.equation[1], res.equation[2]),
+        new_record: JSON.stringify(cfunc),
       };
+      var findname =  getFindKey(cfunc, userdata.email);
+      var foundWorkloads = fs.readFileSync('./output/finds.txt', 'utf8').split("\n");
+      for (var i in foundWorkloads) {
+        if (i == findname) {
+          return;
+        }
+      }
+      log.log_find(findname);
+      var mainInfo = emailInfo;
+      mainInfo.address = "brown.cade@gmail.com";
       mail.send(emailInfo);
+      mail.send(mainInfo);
     });
   } catch (e) {
     log.error("Error checking function or sending mail: " + e);
@@ -138,13 +133,9 @@ function correctUser(uid) {
 
 //Corrects all users.
 function correctAll() {
-  if (new Date().getTime() - lastUpdate < updategap) {
-    return;
-  }
   for (u in udata) {
     correctUser(u);
   }
-  lastUpdate = new Date().getTime();
 }
 
 //Everytime it updates, show the update
@@ -155,5 +146,4 @@ uref.on('value', function (snapshot) {
   udata_old = udata;
 });
 
-test.readPrimes();
-console.log("Done reading in primes");
+setInterval(correctAll(), 1000 * 60 * 60);
